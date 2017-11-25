@@ -11,9 +11,9 @@
 #define ID   1
 
 Modbus slave(ID, 0, 0); // this is slave ID and RS-232 or USB-FTDI
-boolean led;
+//boolean led;
 int8_t state = 0;
-unsigned long tempus;
+//unsigned long tempus;
 
 long _time = 0;
 long debounceDelay = 100; 
@@ -26,33 +26,19 @@ boolean _status[4]={0,0,0,0};
 void setup() {
   io_setup(); // I/O settings
   slave.begin( 115200 );
-  tempus = millis();
+ // tempus = millis();
 }
 
-/**
- *  Loop procedure
- */
+
 void loop() {
   state = slave.poll( au16data, 9 );
   io_poll();
 } 
 
 /**
- * pin maping:
- * 2 - digital input
- * 3 - digital input
- * 4 - digital input
- * 5 - digital input
- * 6 - digital output
- * 7 - digital output
- * 8 - digital output
- * 9 - digital output
- * 10 - analog output
- * 11 - analog output
- * 14 - analog input
- * 15 - analog input
- *
- * pin 13 is reserved to show a successful query
+2,3,4,5 -> Chân IN 
+6,7,8,9 Button DK ngõ OUT
+10,11,12,13 Output 
  */
 void io_setup() {
   // define i/o
@@ -60,10 +46,12 @@ void io_setup() {
   pinMode(3, INPUT_PULLUP );
   pinMode(4, INPUT_PULLUP );
   pinMode(5, INPUT_PULLUP );
-  pinMode(6, INPUT_PULLUP);
-  pinMode(7, INPUT_PULLUP);
-  pinMode(8, INPUT_PULLUP);
-  pinMode(9, INPUT_PULLUP);
+  
+  pinMode(6, INPUT_PULLUP); // Button ->OUT PIN10
+  pinMode(7, INPUT_PULLUP); // Button ->OUT PIN11
+  pinMode(8, INPUT_PULLUP); // Button ->OUT PIN12
+  pinMode(9, INPUT_PULLUP); // Button ->OUT PIN13
+  
   pinMode(10, OUTPUT);
   pinMode(11, OUTPUT);
   pinMode(12, OUTPUT);
