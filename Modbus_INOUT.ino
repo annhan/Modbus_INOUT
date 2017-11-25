@@ -16,18 +16,8 @@ int8_t state = 0;
 unsigned long tempus;
 
 long _time = 0;
-long lastDebounceTime1 = 0;
-long lastDebounceTime2 = 0;
-long lastDebounceTime3 = 0;
-long lastDebounceTime4 = 0;
 long debounceDelay = 100; 
-
-// data array for modbus network sharing
 uint16_t au16data[9];
-boolean status1=0;
-boolean status2=0;
-boolean status3=0;
-boolean status4=0;
 long lastDebounceTime[4] = {0,0,0,0};
 boolean _status[4]={0,0,0,0};
 /**
@@ -89,6 +79,7 @@ void get_button(byte pin, byte vitri){
     if (digitalRead(6) == LOW) {
       if (_status[vitri]){
       _status[vitri]=false;
+      // 4,5,6,7 là bit nhan button
       boolean _bit = (bitRead( au16data[0], vitri+4 )==0)?1:0 ;
       bitWrite( au16data[0], vitri+4, _bit );
       lastDebounceTime[vitri] = millis(); 
@@ -104,6 +95,7 @@ void io_poll() {
   bitWrite( au16data[0], 1, digitalRead( 3 ));
   bitWrite( au16data[0], 2, digitalRead( 4 ));
   bitWrite( au16data[0], 3, digitalRead( 5 ));
+  
   get_button(6,0);
   get_button(7,1);
   get_button(8,2);
