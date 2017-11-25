@@ -58,13 +58,10 @@ void io_setup() {
   pinMode(13, OUTPUT);
 }
 
-/**
- *  Link between the Arduino pins and the Modbus array
- */
 void get_button(byte pin, byte vitri){
   _time=millis();
   if ( ( _time - lastDebounceTime[vitri]) > debounceDelay) {
-    if (digitalRead(6) == LOW) {
+    if (digitalRead(pin) == LOW) {
       if (_status[vitri]){
       _status[vitri]=false;
       // 4,5,6,7 là bit nhan button
@@ -77,13 +74,16 @@ void get_button(byte pin, byte vitri){
   }
 }
 
+/**
+ *  Link between the Arduino pins and the Modbus array
+ */
 void io_poll() {
   // get digital inputs -> au16data[0]
   bitWrite( au16data[0], 0, digitalRead( 2 ));
   bitWrite( au16data[0], 1, digitalRead( 3 ));
   bitWrite( au16data[0], 2, digitalRead( 4 ));
   bitWrite( au16data[0], 3, digitalRead( 5 ));
-  
+  /////Get button for output control
   get_button(6,0);
   get_button(7,1);
   get_button(8,2);
@@ -93,7 +93,7 @@ void io_poll() {
   digitalWrite( 11, bitRead( au16data[0], 5 ));
   digitalWrite( 12, bitRead( au16data[0], 6 ));
   digitalWrite( 10, bitRead( au16data[0], 7 ));
-  
+  ///////////////////////////////////
   au16data[7] = slave.getInCnt();
   au16data[8] = slave.getOutCnt();
   au16data[9] = slave.getErrCnt();
