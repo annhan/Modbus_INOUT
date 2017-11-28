@@ -9,12 +9,12 @@
 
 #include <ModbusRtu.h>
 #define ID   1
-
-Modbus slave(ID, 0, 0); // this is slave ID and RS-232 or USB-FTDI
+Modbus slave(ID, 0, 0); 
+//// this is slave ID and RS-232 or USB-FTDI
 //boolean led;
 int8_t state = 0;
 //unsigned long tempus;
-
+  byte diachi=0b00000000;
 long _time = 0;
 long debounceDelay = 100; 
 uint16_t au16data[10];
@@ -25,6 +25,7 @@ boolean _status[4]={0,0,0,0};
  */
 void setup() {
   io_setup(); // I/O settings
+  slave.setID(diachi);
   slave.begin( 9600 );
  // tempus = millis();
 }
@@ -42,21 +43,28 @@ void loop() {
  */
 void io_setup() {
   // define i/o
-
+  pinMode(A0, INPUT);
+  pinMode(A1, INPUT);
+  pinMode(A2, INPUT);
+  pinMode(A3, INPUT);
   
-
   pinMode(2, OUTPUT);
   pinMode(3, OUTPUT);
   pinMode(4, OUTPUT);
   pinMode(5, OUTPUT);
-  pinMode(6, INPUT); // Button ->OUT PIN10
-  pinMode(7, INPUT); // Button ->OUT PIN11
-  pinMode(8, INPUT); // Button ->OUT PIN12
-  pinMode(9, INPUT); // Button ->OUT PIN13
-  pinMode(10, INPUT );
-  pinMode(11, INPUT );
-  pinMode(12, INPUT );
+  pinMode(6, INPUT_PULLUP); // Button ->OUT PIN10
+  pinMode(7, INPUT_PULLUP); // Button ->OUT PIN11
+  pinMode(8, INPUT_PULLUP); // Button ->OUT PIN12
+  pinMode(9, INPUT_PULLUP); // Button ->OUT PIN13
+  pinMode(10, INPUT_PULLUP );
+  pinMode(11, INPUT_PULLUP );
+  pinMode(12, INPUT_PULLUP );
   pinMode(13, INPUT );
+
+  diachi |= ((digitalRead(A0)>0)?1:0)<<3 ; 
+  diachi |= ((digitalRead(A1)>0)?1:0)<<2 ; 
+  diachi |= ((digitalRead(A2)>0)?1:0)<<1 ; 
+  diachi |= ((digitalRead(A3)>0)?1:0)<<0 ; 
 }
 
 void get_button(byte pin, byte vitri){
@@ -78,6 +86,7 @@ void get_button(byte pin, byte vitri){
 /**
  *  Link between the Arduino pins and the Modbus array
  */
+
 void io_poll() {
   // get digital inputs -> au16data[0]
   bitWrite( au16data[0], 0, digitalRead( 10 ));
