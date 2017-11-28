@@ -17,7 +17,7 @@ int8_t state = 0;
 
 long _time = 0;
 long debounceDelay = 100; 
-uint16_t au16data[9];
+uint16_t au16data[10];
 long lastDebounceTime[4] = {0,0,0,0};
 boolean _status[4]={0,0,0,0};
 /**
@@ -25,13 +25,13 @@ boolean _status[4]={0,0,0,0};
  */
 void setup() {
   io_setup(); // I/O settings
-  slave.begin( 115200 );
+  slave.begin( 9600 );
  // tempus = millis();
 }
 
 
 void loop() {
-  state = slave.poll( au16data, 9 );
+  state = slave.poll( au16data, 10 );
   io_poll();
 } 
 
@@ -42,20 +42,21 @@ void loop() {
  */
 void io_setup() {
   // define i/o
-  pinMode(2, INPUT_PULLUP );
-  pinMode(3, INPUT_PULLUP );
-  pinMode(4, INPUT_PULLUP );
-  pinMode(5, INPUT_PULLUP );
+
   
-  pinMode(6, INPUT_PULLUP); // Button ->OUT PIN10
-  pinMode(7, INPUT_PULLUP); // Button ->OUT PIN11
-  pinMode(8, INPUT_PULLUP); // Button ->OUT PIN12
-  pinMode(9, INPUT_PULLUP); // Button ->OUT PIN13
-  
-  pinMode(10, OUTPUT);
-  pinMode(11, OUTPUT);
-  pinMode(12, OUTPUT);
-  pinMode(13, OUTPUT);
+
+  pinMode(2, OUTPUT);
+  pinMode(3, OUTPUT);
+  pinMode(4, OUTPUT);
+  pinMode(5, OUTPUT);
+  pinMode(6, INPUT); // Button ->OUT PIN10
+  pinMode(7, INPUT); // Button ->OUT PIN11
+  pinMode(8, INPUT); // Button ->OUT PIN12
+  pinMode(9, INPUT); // Button ->OUT PIN13
+  pinMode(10, INPUT );
+  pinMode(11, INPUT );
+  pinMode(12, INPUT );
+  pinMode(13, INPUT );
 }
 
 void get_button(byte pin, byte vitri){
@@ -79,20 +80,20 @@ void get_button(byte pin, byte vitri){
  */
 void io_poll() {
   // get digital inputs -> au16data[0]
-  bitWrite( au16data[0], 0, digitalRead( 2 ));
-  bitWrite( au16data[0], 1, digitalRead( 3 ));
-  bitWrite( au16data[0], 2, digitalRead( 4 ));
-  bitWrite( au16data[0], 3, digitalRead( 5 ));
+  bitWrite( au16data[0], 0, digitalRead( 10 ));
+  bitWrite( au16data[0], 1, digitalRead( 11 ));
+  bitWrite( au16data[0], 2, digitalRead( 12 ));
+  bitWrite( au16data[0], 3, digitalRead( 13 ));
   /////Get button for output control
   get_button(6,0);
   get_button(7,1);
   get_button(8,2);
   get_button(9,3);
  // Doc Coil Xuat ngo ra
-  digitalWrite( 13, bitRead( au16data[0], 4 ));
-  digitalWrite( 11, bitRead( au16data[0], 5 ));
-  digitalWrite( 12, bitRead( au16data[0], 6 ));
-  digitalWrite( 10, bitRead( au16data[0], 7 ));
+  digitalWrite( 2, bitRead( au16data[0], 4 ));
+  digitalWrite( 3, bitRead( au16data[0], 5 ));
+  digitalWrite( 4, bitRead( au16data[0], 6 ));
+  digitalWrite( 5, bitRead( au16data[0], 7 ));
   ///////////////////////////////////
   au16data[7] = slave.getInCnt();
   au16data[8] = slave.getOutCnt();
