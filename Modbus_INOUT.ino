@@ -6,9 +6,21 @@
  *  Recommended Modbus Master: QModbus
  *  http://qmodbus.sourceforge.net/
  */
-
+#include "fastio.h"
 #include <ModbusRtu.h>
 #define ID   1
+#define OUT1 2
+#define OUT2 3
+#define OUT3 4
+#define OUT4 5
+#define IN1 6
+#define IN2 7
+#define IN3 8
+#define IN4 9
+#define IN5 10
+#define IN6 11
+#define IN7 12
+#define IN8 13
 Modbus slave(ID, 0, 0); 
 //// this is slave ID and RS-232 or USB-FTDI
 //boolean led;
@@ -17,7 +29,7 @@ int8_t state = 0;
   byte diachi=0b00000000;
 long _time = 0;
 long debounceDelay = 100; 
-uint16_t au16data[10];
+uint16_t au16data[1];
 long lastDebounceTime[4] = {0,0,0,0};
 boolean _status[4]={0,0,0,0};
 /**
@@ -32,7 +44,7 @@ void setup() {
 
 
 void loop() {
-  state = slave.poll( au16data, 10 );
+  state = slave.poll( au16data, 1 );
   io_poll();
 } 
 
@@ -47,33 +59,38 @@ void io_setup() {
   pinMode(A1, INPUT);
   pinMode(A2, INPUT);
   pinMode(A3, INPUT);
-  
-  pinMode(2, OUTPUT);
-  pinMode(3, OUTPUT);
-  pinMode(4, OUTPUT);
-  pinMode(5, OUTPUT);
-  pinMode(6, INPUT_PULLUP); // Button ->OUT PIN10
-  pinMode(7, INPUT_PULLUP); // Button ->OUT PIN11
-  pinMode(8, INPUT_PULLUP); // Button ->OUT PIN12
-  pinMode(9, INPUT_PULLUP); // Button ->OUT PIN13
-  pinMode(10, INPUT_PULLUP );
-  pinMode(11, INPUT_PULLUP );
-  pinMode(12, INPUT_PULLUP );
-  pinMode(13, INPUT );
-
+  SET_OUTPUT(OUT1);
+  SET_OUTPUT(OUT2);
+  SET_OUTPUT(OUT3);
+  SET_OUTPUT(OUT4);
+  SET_INPUT(IN1);
+  SET_INPUT(IN2);
+  SET_INPUT(IN3);
+  SET_INPUT(IN4);
+  SET_INPUT(IN5);
+  SET_INPUT(IN6);
+  SET_INPUT(IN7);
+  SET_INPUT(IN8);
+  digitalWrite( A3, 0);
   diachi |= ((digitalRead(A0)>0)?1:0)<<3 ; 
   diachi |= ((digitalRead(A1)>0)?1:0)<<2 ; 
   diachi |= ((digitalRead(A2)>0)?1:0)<<1 ; 
-  diachi |= ((digitalRead(A3)>0)?1:0)<<0 ; 
+  diachi |= ((analogRead(A3)>800)?1:0)<<0 ; 
 }
 
-void get_button(byte pin, byte vitri){
+void get_button(byte vitri){
   _time=millis();
   if ( ( _time - lastDebounceTime[vitri]) > debounceDelay) {
-    if (digitalRead(pin) == LOW) {
+    boolean pin_value=1;
+    switch (vitri){      
+      case 0: pin_value=READ( IN1 );break;
+      case 1: pin_value=READ( IN2 );break;
+      case 2: pin_value=READ( IN3 );break;
+      case 3: pin_value=READ( IN4 );break;
+    }           
+      if (pin_value == 0) {
       if (_status[vitri]){
       _status[vitri]=false;
-      // 4,5,6,7 là bit nhan button
       boolean _bit = (bitRead( au16data[0], vitri+4 )==0)?1:0 ;
       bitWrite( au16data[0], vitri+4, _bit );
       lastDebounceTime[vitri] = millis(); 
@@ -83,28 +100,19 @@ void get_button(byte pin, byte vitri){
   }
 }
 
-/**
- *  Link between the Arduino pins and the Modbus array
- */
-
 void io_poll() {
-  // get digital inputs -> au16data[0]
-  bitWrite( au16data[0], 0, digitalRead( 10 ));
-  bitWrite( au16data[0], 1, digitalRead( 11 ));
-  bitWrite( au16data[0], 2, digitalRead( 12 ));
-  bitWrite( au16data[0], 3, digitalRead( 13 ));
+  bitWrite( au16data[0], 0, READ( IN5 ));
+  bitWrite( au16data[0], 1, READ( IN6 ));
+  bitWrite( au16data[0], 2, READ( IN7 ));
+  bitWrite( au16data[0], 3, READ( IN8 ));
   /////Get button for output control
-  get_button(6,0);
-  get_button(7,1);
-  get_button(8,2);
-  get_button(9,3);
- // Doc Coil Xuat ngo ra
-  digitalWrite( 2, bitRead( au16data[0], 4 ));
-  digitalWrite( 3, bitRead( au16data[0], 5 ));
-  digitalWrite( 4, bitRead( au16data[0], 6 ));
-  digitalWrite( 5, bitRead( au16data[0], 7 ));
-  ///////////////////////////////////
-  au16data[7] = slave.getInCnt();
-  au16data[8] = slave.getOutCnt();
-  au16data[9] = slave.getErrCnt();
+  get_button(0);
+  get_button(1);
+  get_button(2);
+  get_button(3);
+ // Doc Coil Xuat ngo ra WRITE(LED_PIN,LOW);
+  WRITE( OUT1, bitRead( au16data[0], 4 ));
+  WRITE( OUT2, bitRead( au16data[0], 5 ));
+  WRITE( OUT3, bitRead( au16data[0], 6 ));
+  WRITE( OUT4, bitRead( au16data[0], 7 ));
 }
